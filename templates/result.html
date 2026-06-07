@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Detection Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="panel">
+        <div class="topline">
+          <div>
+            <div class="eyebrow">Detection complete</div>
+            <h1>{{ filename }}</h1>
+          </div>
+          <a class="ghost-link" href="{{ url_for('index') }}">Upload another</a>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <span>Objects found</span>
+            <strong>{{ prediction_count }}</strong>
+          </div>
+        </div>
+
+        <div class="image-grid">
+          <figure>
+            <img src="{{ original_image }}" alt="Uploaded image" />
+            <figcaption>Original</figcaption>
+          </figure>
+          <figure>
+            <img src="{{ annotated_image }}" alt="Annotated detection image" />
+            <figcaption>Annotated</figcaption>
+          </figure>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Class</th>
+                <th>Confidence</th>
+                <th>BBox</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in predictions %}
+                <tr>
+                  <td>{{ item.class_name }}</td>
+                  <td>{{ "%.2f"|format(item.confidence * 100) }}%</td>
+                  <td>[{{ item.bbox[0]|round(1) }}, {{ item.bbox[1]|round(1) }}, {{ item.bbox[2]|round(1) }}, {{ item.bbox[3]|round(1) }}]</td>
+                </tr>
+              {% endfor %}
+              {% if predictions|length == 0 %}
+                <tr>
+                  <td colspan="3">No detections found.</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
+

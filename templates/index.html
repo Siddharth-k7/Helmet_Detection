@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Helmet Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="panel">
+        <div class="eyebrow">Helmet detection</div>
+        <h1>Upload an image and get detections back right away.</h1>
+        <p class="lead">
+          Use the web form for a quick check, or post to <code>/api/predict</code> for JSON output.
+        </p>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="messages">
+              {% for message in messages %}
+                <div class="message">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <form class="upload-form" action="{{ url_for('predict_web') }}" method="post" enctype="multipart/form-data">
+          <label class="file-field">
+            <span>Select image</span>
+            <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp,image/*" required />
+          </label>
+          <button type="submit">Run detection</button>
+        </form>
+
+        <div class="meta-row">
+          <span>Routes</span>
+          <code>/</code>
+          <code>/predict</code>
+          <code>/api/predict</code>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
+

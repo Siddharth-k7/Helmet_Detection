@@ -1,0 +1,21 @@
+
+
+Helmet Detection Flask app
+
+Project layout:
+- app/app.py -> Flask app, web UI, and JSON API
+- model/best.pt -> trained YOLO weights
+- uploads/ -> saved user uploads
+- results/ -> annotated output images
+
+Run locally:
+1. Install dependencies: `pip install -r requirements.txt`
+2. Start the app: `python -m app.app`
+3. Open `http://127.0.0.1:5000`
+
+API:
+- POST `/api/predict` with form-data field `image`
+
+Training note:
+- YOLO expects images/labels in the usual train/val/test folder structure with a `data.yaml` file.
+
