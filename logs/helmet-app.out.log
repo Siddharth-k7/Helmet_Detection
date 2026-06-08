@@ -1,0 +1,11 @@
+ * Serving Flask app 'app'
+ * Debug mode: on
+
+image 1/1 D:\BlueStocks\Helmat_Detection\uploads\90c5bce94e0d494aad4478d5973c119d_test_img_for_Helmet_detection.png: 640x448 1 head, 265.6ms
+Speed: 66.0ms preprocess, 265.6ms inference, 17.9ms postprocess per image at shape (1, 3, 640, 448)
+
+image 1/1 D:\BlueStocks\Helmat_Detection\uploads\8df54b837f484e999d45f6a0738e7bbd_black-white-scene-showcasing-life-construction-workers-site.png: 384x640 1 head, 204.7ms
+Speed: 9.9ms preprocess, 204.7ms inference, 3.4ms postprocess per image at shape (1, 3, 384, 640)
+
+image 1/1 D:\BlueStocks\Helmat_Detection\uploads\7cc16ecd4ba946a18ee3e32693f993d1_test_img_for_Helmet_detection.png: 640x448 1 head, 355.7ms
+Speed: 73.6ms preprocess, 355.7ms inference, 23.7ms postprocess per image at shape (1, 3, 640, 448)
