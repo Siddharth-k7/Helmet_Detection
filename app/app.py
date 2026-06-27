@@ -147,3 +147,19 @@ app = create_app()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
+
+
+
+
+''''Approach 2: Run YOLO Client-Side (In the Browser)
+If you want to keep deployment 100% free and don't want to 
+maintain a backend, you can convert your YOLO model into 
+ONNX or TensorFlow.js format.How it works: This allows the 
+AI model to run entirely in the user’s web browser utilizing
+
+ their local GPU/CPU.Benefits: Absolutely zero dependencies,
+   no heavy server RAM required, and can be deployed entirely 
+   on Vercel.Steps to do it: Use the Ultralytics built-in export
+     tool to convert your model to ONNX, then use TensorFlow.js
+ inside your Next.js or React application to handle the inference'''

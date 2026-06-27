@@ -114,3 +114,9 @@ jinja2.exceptions.TemplateNotFound: index.html
 127.0.0.1 - - [07/Jun/2026 23:12:27] "GET /static/styles.css HTTP/1.1" 304 -
 127.0.0.1 - - [07/Jun/2026 23:12:27] "GET /uploads/8df54b837f484e999d45f6a0738e7bbd_black-white-scene-showcasing-life-construction-workers-site.png HTTP/1.1" 200 -
 127.0.0.1 - - [07/Jun/2026 23:12:27] "GET /results/result_8df54b837f484e999d45f6a0738e7bbd_black-white-scene-showcasing-life-construction-workers-site.jpg HTTP/1.1" 200 -
+127.0.0.1 - - [08/Jun/2026 13:50:00] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [08/Jun/2026 13:50:00] "GET /static/styles.css HTTP/1.1" 304 -
+127.0.0.1 - - [08/Jun/2026 13:50:11] "POST /predict HTTP/1.1" 200 -
+127.0.0.1 - - [08/Jun/2026 13:50:11] "GET /static/styles.css HTTP/1.1" 304 -
+127.0.0.1 - - [08/Jun/2026 13:50:12] "GET /uploads/7cc16ecd4ba946a18ee3e32693f993d1_test_img_for_Helmet_detection.png HTTP/1.1" 200 -
+127.0.0.1 - - [08/Jun/2026 13:50:12] "GET /results/result_7cc16ecd4ba946a18ee3e32693f993d1_test_img_for_Helmet_detection.jpg HTTP/1.1" 200 -
