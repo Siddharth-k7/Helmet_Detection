@@ -159,7 +159,13 @@ def create_app() -> Flask:
 
     @app.route("/health", methods=["GET"])
     def health():
-        return jsonify({"status": "ok"})
+        return jsonify({"status": "ok", "model": str(get_model_path())})
+
+    @app.errorhandler(500)
+    def internal_error(e):
+        err = traceback.format_exc()
+        logging.error("500 error: %s", err)
+        return f"<pre style='padding:20px;color:red'><b>500 — Internal Server Error</b>\n\n{err}</pre>", 500
 
     return app
 
