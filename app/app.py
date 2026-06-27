@@ -1,13 +1,21 @@
 from __future__ import annotations
 
+import logging
 import os
+import traceback
 import uuid
 from pathlib import Path
 
+import matplotlib
+matplotlib.use("Agg")   # headless backend — must be set before any other matplotlib import
+
 import cv2
+import numpy as np
 from flask import Flask, flash, jsonify, redirect, render_template, request, send_from_directory, url_for
 from werkzeug.utils import secure_filename
 from ultralytics import YOLO
+
+logging.basicConfig(level=logging.INFO)
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -44,23 +52,27 @@ def create_app() -> Flask:
     model = YOLO(str(get_model_path()))
 
     def run_inference(image_path: Path) -> tuple[list[dict], str]:
-        results = model(str(image_path))
+        results = model(str(image_path), verbose=False)
         result = results[0]
 
         predictions: list[dict] = []
-        for box in result.boxes:
-            class_id = int(box.cls)
-            bbox = [float(v) for v in box.xyxy[0].tolist()]
-            predictions.append(
-                {
-                    "class_id": class_id,
-                    "class_name": result.names[class_id],
-                    "confidence": round(float(box.conf), 4),
-                    "bbox": bbox,
-                }
-            )
+        if result.boxes is not None:
+            for box in result.boxes:
+                class_id = int(box.cls)
+                bbox = [float(v) for v in box.xyxy[0].tolist()]
+                predictions.append(
+                    {
+                        "class_id": class_id,
+                        "class_name": result.names[class_id],
+                        "confidence": round(float(box.conf), 4),
+                        "bbox": bbox,
+                    }
+                )
 
         annotated = result.plot()
+        # ultralytics may return PIL Image or numpy array depending on version
+        if not isinstance(annotated, np.ndarray):
+            annotated = np.array(annotated)
         annotated_name = f"result_{image_path.stem}.jpg"
         annotated_path = RESULT_FOLDER / annotated_name
         cv2.imwrite(str(annotated_path), annotated)
@@ -89,7 +101,12 @@ def create_app() -> Flask:
         upload_path = UPLOAD_FOLDER / unique_name
         file.save(upload_path)
 
-        predictions, annotated_name = run_inference(upload_path)
+        try:
+            predictions, annotated_name = run_inference(upload_path)
+        except Exception:
+            logging.error("Inference failed:\n%s", traceback.format_exc())
+            flash("Detection failed — please try again with a different image.")
+            return redirect(url_for("index"))
 
         return render_template(
             "result.html",
@@ -116,7 +133,12 @@ def create_app() -> Flask:
         upload_path = UPLOAD_FOLDER / unique_name
         file.save(upload_path)
 
-        predictions, annotated_name = run_inference(upload_path)
+        try:
+            predictions, annotated_name = run_inference(upload_path)
+        except Exception:
+            logging.error("Inference failed:\n%s", traceback.format_exc())
+            return jsonify({"error": "inference failed", "detail": traceback.format_exc()}), 500
+
         return jsonify(
             {
                 "filename": file.filename,
