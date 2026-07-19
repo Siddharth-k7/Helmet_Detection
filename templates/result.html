@@ -3,65 +3,82 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Detection Results</title>
+    <title>Detection Results — Helmet Detection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
   </head>
   <body>
     <main class="page">
-      <section class="panel">
-        <div class="topline">
-          <div>
-            <div class="eyebrow">Detection complete</div>
-            <h1>{{ filename }}</h1>
+      <div class="wrap">
+
+        <section class="panel">
+          <div class="topline">
+            <div>
+              <div class="eyebrow">Detection complete</div>
+              <h1 class="brand-title" style="font-size: 26px;">{{ filename }}</h1>
+            </div>
+            <a class="btn btn-ghost" href="{{ url_for('index') }}">Upload another</a>
           </div>
-          <a class="ghost-link" href="{{ url_for('index') }}">Upload another</a>
-        </div>
 
-        <div class="stats">
-          <div class="stat">
-            <span>Objects found</span>
-            <strong>{{ prediction_count }}</strong>
+          <div class="results-summary" style="margin-top: 18px;">
+            <span class="count-pill">{{ prediction_count }} head{{ '' if prediction_count == 1 else 's' }} detected</span>
           </div>
-        </div>
 
-        <div class="image-grid">
-          <figure>
-            <img src="{{ original_image }}" alt="Uploaded image" />
-            <figcaption>Original</figcaption>
-          </figure>
-          <figure>
-            <img src="{{ annotated_image }}" alt="Annotated detection image" />
-            <figcaption>Annotated</figcaption>
-          </figure>
-        </div>
+          <div class="image-grid">
+            <figure>
+              <img src="{{ original_image }}" alt="Uploaded image" />
+              <figcaption>Original</figcaption>
+            </figure>
+            <figure>
+              <img src="{{ annotated_image }}" alt="Annotated detection image" />
+              <figcaption>Annotated</figcaption>
+            </figure>
+          </div>
 
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Class</th>
-                <th>Confidence</th>
-                <th>BBox</th>
-              </tr>
-            </thead>
-            <tbody>
+          <div class="detections">
+            <h3>Detections</h3>
+            <div class="detection-list">
               {% for item in predictions %}
-                <tr>
-                  <td>{{ item.class_name }}</td>
-                  <td>{{ "%.2f"|format(item.confidence * 100) }}%</td>
-                  <td>[{{ item.bbox[0]|round(1) }}, {{ item.bbox[1]|round(1) }}, {{ item.bbox[2]|round(1) }}, {{ item.bbox[3]|round(1) }}]</td>
-                </tr>
+                <span class="det-badge">
+                  <span class="swatch"></span>Head detected
+                  <span class="conf">{{ "%.1f"|format(item.confidence * 100) }}%</span>
+                </span>
+              {% else %}
+                <div class="empty-state">No heads detected in this image.</div>
               {% endfor %}
-              {% if predictions|length == 0 %}
+            </div>
+          </div>
+
+          <div class="table-wrap" style="margin-top: 22px;">
+            <table>
+              <thead>
                 <tr>
-                  <td colspan="3">No detections found.</td>
+                  <th>Class</th>
+                  <th>Confidence</th>
+                  <th>BBox (x1, y1, x2, y2)</th>
                 </tr>
-              {% endif %}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
+              <tbody>
+                {% for item in predictions %}
+                  <tr>
+                    <td>{{ item.class_name }}</td>
+                    <td>{{ "%.2f"|format(item.confidence * 100) }}%</td>
+                    <td>[{{ item.bbox[0]|round(1) }}, {{ item.bbox[1]|round(1) }}, {{ item.bbox[2]|round(1) }}, {{ item.bbox[3]|round(1) }}]</td>
+                  </tr>
+                {% endfor %}
+                {% if predictions|length == 0 %}
+                  <tr>
+                    <td colspan="3">No detections found.</td>
+                  </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
     </main>
   </body>
 </html>
-

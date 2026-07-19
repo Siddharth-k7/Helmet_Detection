@@ -3,17 +3,48 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Helmet Detection</title>
+    <title>Helmet Detection — YOLOv8 head detector</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
   </head>
   <body>
     <main class="page">
-      <section class="panel">
-        <div class="eyebrow">Helmet detection</div>
-        <h1>Upload an image and get detections back right away.</h1>
-        <p class="lead">
-          Use the web form for a quick check, or post to <code>/api/predict</code> for JSON output.
-        </p>
+      <div class="wrap">
+
+        <header class="brand">
+          <h1 class="brand-title">Helmet Detection</h1>
+          <p class="brand-tagline">
+            Real-time head detection running entirely on ONNX Runtime — upload an image
+            and see bounding boxes come back in milliseconds.
+          </p>
+          <div class="badges">
+            <span class="badge">YOLOv8</span>
+            <span class="badge">ONNX Runtime</span>
+            <span class="badge">Flask</span>
+            <span class="badge">OpenCV</span>
+          </div>
+        </header>
+
+        <div class="stats-strip">
+          <div class="stat-cell">
+            <span class="stat-label">mAP50</span>
+            <span class="stat-value accent">96.8%</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-label">mAP50-95</span>
+            <span class="stat-value accent">66.0%</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-label">Model size</span>
+            <span class="stat-value">11.7 MB</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-label">Backend</span>
+            <span class="stat-value">CPU · ONNX</span>
+          </div>
+        </div>
 
         {% with messages = get_flashed_messages() %}
           {% if messages %}
@@ -25,22 +56,111 @@
           {% endif %}
         {% endwith %}
 
-        <form class="upload-form" action="{{ url_for('predict_web') }}" method="post" enctype="multipart/form-data">
-          <label class="file-field">
-            <span>Select image</span>
-            <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp,image/*" required />
-          </label>
-          <button type="submit">Run detection</button>
-        </form>
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Upload <span>&mdash; jpg, png, webp</span></h2>
+          </div>
 
-        <div class="meta-row">
-          <span>Routes</span>
-          <code>/</code>
-          <code>/predict</code>
-          <code>/api/predict</code>
-        </div>
-      </section>
+          <form id="upload-form" class="upload-form" action="{{ url_for('predict_web') }}" method="post" enctype="multipart/form-data">
+            <label id="dropzone" class="dropzone" for="file-input">
+              <input id="file-input" type="file" name="image" accept=".jpg,.jpeg,.png,.webp,image/*" required />
+
+              <div id="dz-idle">
+                <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <div class="dz-title">Drop an image here, or click to browse</div>
+                <div class="dz-sub">JPG · PNG · WEBP, up to 12MB</div>
+              </div>
+
+              <div id="dz-preview" class="dz-preview" style="display:none;">
+                <img id="dz-preview-img" alt="Selected image preview" />
+                <div class="dz-preview-info">
+                  <div id="dz-filename" class="dz-filename"></div>
+                  <div id="dz-filesize" class="dz-filesize"></div>
+                </div>
+                <button id="dz-clear" type="button" class="dz-clear" title="Remove file" aria-label="Remove file">&times;</button>
+              </div>
+            </label>
+
+            <div id="form-error" class="message" style="display:none;"></div>
+
+            <div class="actions">
+              <button id="run-btn" type="submit" class="btn btn-primary" disabled>
+                <span class="spinner"></span>
+                <span class="btn-label-idle">Run detection</span>
+                <span class="btn-label-loading">Detecting&hellip;</span>
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section id="samples-panel" class="panel reveal">
+          <div class="panel-head">
+            <h2>No image handy? <span>try a sample</span></h2>
+          </div>
+          <div class="samples-grid">
+            <button type="button" class="sample-tile" data-src="{{ url_for('static', filename='samples/sample-worker-clipboard.png') }}" data-name="sample-worker-clipboard.png">
+              <img src="{{ url_for('static', filename='samples/sample-worker-clipboard.png') }}" alt="Sample: worker on site holding a clipboard" loading="lazy" />
+              <span class="sample-label">Worker on site</span>
+            </button>
+            <button type="button" class="sample-tile" data-src="{{ url_for('static', filename='samples/sample-site-overview.webp') }}" data-name="sample-site-overview.webp">
+              <img src="{{ url_for('static', filename='samples/sample-site-overview.webp') }}" alt="Sample: construction site overview" loading="lazy" />
+              <span class="sample-label">Site overview</span>
+            </button>
+          </div>
+        </section>
+
+        <section id="results-panel" class="panel">
+          <div class="panel-head">
+            <h2>Results</h2>
+            <button id="reset-btn" type="button" class="btn btn-ghost">Try another image</button>
+          </div>
+
+          <div class="results-summary">
+            <span id="count-pill" class="count-pill">0 heads detected</span>
+            <span id="latency-pill" class="latency-pill">&mdash;</span>
+            <div class="view-toggle">
+              <button type="button" data-view="both" class="active">Both</button>
+              <button type="button" data-view="original">Original</button>
+              <button type="button" data-view="annotated">Annotated</button>
+            </div>
+          </div>
+
+          <div id="image-grid" class="image-grid">
+            <figure id="fig-original">
+              <img id="img-original" alt="Uploaded image" />
+              <figcaption>Original</figcaption>
+            </figure>
+            <figure id="fig-annotated">
+              <img id="img-annotated" alt="Annotated detection image" />
+              <figcaption>Annotated</figcaption>
+            </figure>
+          </div>
+
+          <div class="detections">
+            <h3>Detections</h3>
+            <div id="detection-list" class="detection-list"></div>
+          </div>
+        </section>
+
+        <footer>
+          <div class="footer-links">
+            <a href="https://github.com/Siddharth-k7/Helmet_Detection" target="_blank" rel="noopener">GitHub repository</a>
+            <a href="{{ url_for('health') }}">/health</a>
+          </div>
+          <div>
+            <span class="curl-label">Use the API directly</span>
+            <div class="curl-block">curl -X POST -F "image=@photo.jpg" https://&lt;your-app&gt;.onrender.com/api/predict</div>
+          </div>
+          <div class="credit">
+            Built by <a href="https://www.linkedin.com/in/siddharth-kancharla/" target="_blank" rel="noopener">Siddharth K</a>
+          </div>
+        </footer>
+
+      </div>
     </main>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
   </body>
 </html>
-
